@@ -10,8 +10,8 @@ def sobel_filters(img):
     Ix = cv2.filter2D(img,-1,Kx)
     Iy = cv2.filter2D(img,-1,Ky)
 
-    print(Ix.shape)
-    print(Iy.shape)
+    #print(Ix.shape)
+    #print(Iy.shape)
 
     #Ixx =  cv2.filter2D(Ix,-1,Ix)
     #Iyy =  cv2.filter2D(Iy,-1,Iy)
