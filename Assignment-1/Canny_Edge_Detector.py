@@ -111,20 +111,24 @@ cv2.waitKey(0)
 cv2.destroyAllWindows() 
 
 G,theta = sobel_filters(img)
+plt.axis("off")
 plt.imshow(np.rint(G).astype(int),cmap = 'gray')
 plt.show()
 
 Z = non_max_suppression(G,theta)
+plt.axis("off")
 plt.imshow(Z,cmap = 'gray')
 plt.show()
 
 
 res, weak, strong = threshold(Z)
+plt.axis("off")
 plt.imshow(res,cmap = 'gray')
 plt.show()
 
 
 eimg = hysteresis(res, weak)
+plt.axis("off")
 plt.imshow(eimg,cmap = 'gray')
 plt.show()
 
