@@ -2,13 +2,14 @@ import cv2
 import numpy as np 
 import matplotlib.pyplot as plt
 
-def sobel_filters(img):
-    Kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], np.float32)
-    Ky = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], np.float32)
+#Calculate derivative in X and Y direction
+def filter_sobel(image):
+    Sx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], np.float32)
+    Sy = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], np.float32)
     
     
-    Ix = cv2.filter2D(img,-1,Kx)
-    Iy = cv2.filter2D(img,-1,Ky)
+    Ix = cv2.filter2D(image,-1,Sx)
+    Iy = cv2.filter2D(image,-1,Sy)
 
     #print(Ix.shape)
     #print(Iy.shape)
@@ -43,7 +44,7 @@ plt.imshow(blur,cmap='gray')
 plt.show() 
 
 
-Ixx, Iyy, Ixy = sobel_filters(blur)
+Ixx, Iyy, Ixy = filter_sobel(blur)
 
 b_Ixx = cv2.GaussianBlur(Ixx,(5,5),0)
 b_Iyy = cv2.GaussianBlur(Iyy,(5,5),0)
