@@ -1,57 +1,53 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy import ndimage
 
-def sobel_filters(img):
-    Kx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], np.float32)
-    Ky = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], np.float32)
+def filter_sobel(image):
+    Sx = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], np.float32)
+    Sy = np.array([[1, 2, 1], [0, 0, 0], [-1, -2, -1]], np.float32)
     
-    #Ix = ndimage.filters.convolve(img, Kx)
-    #Iy = ndimage.filters.convolve(img, Ky)
-    
-    Ix = cv2.filter2D(img,-1,Kx)
-    Iy = cv2.filter2D(img,-1,Ky)
+    Ix = cv2.filter2D(img,-1,Sx)
+    Iy = cv2.filter2D(img,-1,Sy)
 
-    G = np.hypot(Ix, Iy)
-    G = G / G.max() * 255
+    M = np.hypot(Ix, Iy)
+    M = M / M.max() * 255
     theta = np.arctan2(Iy, Ix)
     
-    return (G, theta) 
+    return (M, theta) 
 
 
-def non_max_suppression(img, D):
-    M, N = img.shape
-    Z = np.zeros((M,N), dtype=np.int32)
+def Non_Maximal_Suppression(image, D):
+    Row, Col = image.shape
+    Z = np.zeros((Row,Col), dtype=np.int32)
     angle = D * 180. / np.pi
     angle[angle < 0] += 180
 
     
-    for i in range(1,M-1):
-        for j in range(1,N-1):
+    for i in range(1,Row-1):
+        for j in range(1,Col-1):
             try:
                 q = 255
                 r = 255
                 
                #angle 0
                 if (0 <= angle[i,j] < 22.5) or (157.5 <= angle[i,j] <= 180):
-                    q = img[i, j+1]
-                    r = img[i, j-1]
+                    q = image[i, j+1]
+                    r = image[i, j-1]
                 #angle 45
                 elif (22.5 <= angle[i,j] < 67.5):
-                    q = img[i+1, j-1]
-                    r = img[i-1, j+1]
+                    q = image[i+1, j-1]
+                    r = image[i-1, j+1]
                 #angle 90
                 elif (67.5 <= angle[i,j] < 112.5):
-                    q = img[i+1, j]
-                    r = img[i-1, j]
+                    q = image[i+1, j]
+                    r = image[i-1, j]
                 #angle 135
                 elif (112.5 <= angle[i,j] < 157.5):
-                    q = img[i-1, j-1]
-                    r = img[i+1, j+1]
+                    q = image[i-1, j-1]
+                    r = image[i+1, j+1]
 
-                if (img[i,j] >= q) and (img[i,j] >= r):
-                    Z[i,j] = img[i,j]
+                if (image[i,j] >= q) and (image[i,j] >= r):
+                    Z[i,j] = image[i,j]
                 else:
                     Z[i,j] = 0
 
@@ -60,42 +56,43 @@ def non_max_suppression(img, D):
     
     return Z
 
-def threshold(img, lowThresholdRatio=0.05, highThresholdRatio=0.09):
+#identify strong weak and non relevamt pixels
+def threshold(image, lowThRatio=0.05, highThRatio=0.09):
     
-    highThreshold = img.max() * highThresholdRatio;
-    lowThreshold = highThreshold * lowThresholdRatio;
+    highTh = image.max() * highThRatio;
+    lowTh = highTh * lowThRatio;
     
-    M, N = img.shape
+    M, N = image.shape
     res = np.zeros((M,N), dtype=np.int32)
     
     weak = np.int32(100)
     strong = np.int32(200)
+
+    x_strong, y_strong = np.where(image >= highTh)
+    x_zeros, y_zeros = np.where(image < lowTh)
     
-    strong_i, strong_j = np.where(img >= highThreshold)
-    zeros_i, zeros_j = np.where(img < lowThreshold)
+    x_weak, y_weak = np.where((image <= highTh) & (image >= lowTh))
     
-    weak_i, weak_j = np.where((img <= highThreshold) & (img >= lowThreshold))
-    
-    res[strong_i, strong_j] = strong
-    res[weak_i, weak_j] = weak
+    res[x_strong, y_strong] = strong
+    res[x_weak, y_weak] = weak
     
     return (res, weak, strong)
 
-def hysteresis(img, weak, strong=200):
-    M, N = img.shape  
-    for i in range(1, M-1):
-        for j in range(1, N-1):
-            if (img[i,j] == weak):
+def hysteresis(image, weak, strong=200):
+    Row, Col = image.shape  
+    for i in range(1, Row-1):
+        for j in range(1, Col-1):
+            if (image[i,j] == weak):
                 try:
-                    if ((img[i+1, j-1] == strong) or (img[i+1, j] == strong) or (img[i+1, j+1] == strong)
-                        or (img[i, j-1] == strong) or (img[i, j+1] == strong)
-                        or (img[i-1, j-1] == strong) or (img[i-1, j] == strong) or (img[i-1, j+1] == strong)):
-                        img[i, j] = strong
+                    if ((image[i+1, j-1] == strong) or (image[i+1, j] == strong) or (image[i+1, j+1] == strong)
+                        or (image[i, j-1] == strong) or (image[i, j+1] == strong)
+                        or (image[i-1, j-1] == strong) or (image[i-1, j] == strong) or (image[i-1, j+1] == strong)):
+                        image[i, j] = strong
                     else:
-                        img[i, j] = 0
+                        image[i, j] = 0
                 except IndexError as e:
                     pass
-    return img
+    return image
 
 
 
@@ -110,12 +107,12 @@ cv2.imshow('Blurred Image', blur)
 cv2.waitKey(0) 
 cv2.destroyAllWindows() 
 
-G,theta = sobel_filters(img)
+G,theta = filter_sobel(img)
 plt.axis("off")
 plt.imshow(np.rint(G).astype(int),cmap = 'gray')
 plt.show()
 
-Z = non_max_suppression(G,theta)
+Z = Non_Maximal_Suppression(G,theta)
 plt.axis("off")
 plt.imshow(Z,cmap = 'gray')
 plt.show()
