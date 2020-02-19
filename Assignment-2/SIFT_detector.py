@@ -2,9 +2,11 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
+#store all resized images
 Images = []
 
-for i in range(1,37):
+#Resize all the images
+for i in range(1,37):     
     img = cv2.imread('Images\\'+str(i)+'.jpg')
     gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
     row,col= gray.shape
@@ -15,13 +17,17 @@ for i in range(1,37):
     ngray = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
     Images.append(ngray)
 
+#arrays to store keypoints and descriptors
 Keypoints = []
 Descriptors = []
 
+#initialize sift object
 sift = cv2.xfeatures2d.SIFT_create(500)
 Keypoints.clear()
 Descriptors.clear()
 min_row = 999
+
+#store descriptor and keyoints of all images
 for i in range(len(Images)):
     kp,des = sift.detectAndCompute(Images[i],None)
     Keypoints.append(kp)
@@ -30,12 +36,12 @@ for i in range(len(Images)):
     	min_row = des.shape[0]
 
 r = min_row
-k=10
+k=10 # top-k matches of the features 
 dict_i = {}
 accuracy = 0
 
-for key_image in range(0,3):
-    for i in range(0,36):
+for key_image in range(0,36):  #pick image one by one
+    for i in range(0,36):      #other images for key image
         if i == key_image:
             pass
         else:
@@ -47,53 +53,34 @@ for key_image in range(0,3):
                     if np.linalg.norm(Descriptors[key_image][m]-Descriptors[i][n])<minVal:
                         minVal = np.linalg.norm(Descriptors[key_image][m]-Descriptors[i][n])
                 dist.append(minVal)
-            dist.sort() 
-            avg = np.average(dist[:k])
+            dist.sort() #sort the distances odf image
+            avg = np.average(dist[:k])  #calculate avg
             dict_i[i]=avg
 
+    #sort the images according to avg distance
     sorted_d = np.asarray(sorted(dict_i.items(), key=lambda x: x[1]))
     match_index = sorted_d[:5,:1].astype(int).tolist()
 
-    key_gp = (key_image+1)//6
+    key_gp = (key_image+1)//6  #calculate the gpof key image
     if (key_image+1)%6 !=0:
         key_gp+=1
 
     count=0
-    for mi in match_index:
+    for mi in match_index:  #calculate the index of matched images
         mi_gp = (mi[0]+1)//6
         if (mi[0]+1)%6 !=0:
             mi_gp+=1
         if mi_gp == key_gp:
             count+=1
 
-    if count == 5:
+    if count == 5:      #calculate accuracy
         accuracy+=100
     else:
         accuracy+=(count/5)*100
 
-print(accuracy/3)
 
-#print(dict_i)
-#sorted_d = np.asarray(sorted(dict_i.items(), key=lambda x: x[1]))
-#print(sorted_d[:5,:1].astype(int).tolist())
-# match_index = sorted_d[:5,:1].astype(int).tolist()
+print('Average Accuracy: ',accuracy/36)
 
-# key_gp = (key_image+1)//6
-# if (key_image+1)%6 !=0:
-#     key_gp+=1
-
-# count=0
-# for mi in match_index:
-#     mi_gp = (mi[0]+1)//6
-#     if (mi[0]+1)%6 !=0:
-#         mi_gp+=1
-#     if mi_gp == key_gp:
-#         count+=1
-
-# if count == 5:
-#     print(100)
-# else:
-#     print((count/5)*100)
 
 
 
