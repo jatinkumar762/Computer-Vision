@@ -1,23 +1,23 @@
-#**SIFT and ORB feature matching**
+# **SIFT and ORB feature matching**
 
-###**Algorithm Steps:-**
+### **Algorithm Steps:-**
 1. Take the gray scale of images
 2. For convention we reduced the size of the image if needed (less computation)
 3. Find the descriptor of images using sift or orb method
 4. For any key image, compute distance b/w it's decriptor and other image descriptor points. One keypoint is matched to another image keypoint for which we get min distnace between them. 
 5. For the key image, another image which has min avg of top k distances (decreasing order,sorted) than other images for the key image is matching image of key image.
    
-#####**Output Accuracy for SIFT algorithm-**
+##### **Output Accuracy for SIFT algorithm-**
 
 !["SIFT"](SIFT_Feature_Matching.png "Output Image") </br>
 
 
-#####**Output Accuracy for ORB algorithm-**
+##### **Output Accuracy for ORB algorithm-**
 
 !["ORB"](ORB_Feature_Matching.png "Output Image")
 
 
-###**Problem Statement:-**
+### **Problem Statement:-**
 
 1. Capture 6 images of 10 different scenes of your choice using a hand-held camera like cellphone's camera without using a tripod. Resize the images so that max(row,column)<=1024 while keeping the aspect ratio of the image intact.
 2. Make sure there are no moving objects present in the scene and there should be some angle variation between the images.
